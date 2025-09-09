@@ -1,0 +1,437 @@
+---
+import { baseUrl } from '@/utils/functions';
+
+const arrayCards = [
+  {
+    title: '3d Rotating Gallery',
+    repo: 'https://github.com/20essentials/project-000-620',
+    localImage: '/assets/n620.avif',
+    id: '01'
+  },
+  {
+    title: 'Stack Tower',
+    repo: 'https://github.com/20essentials/project-000-626',
+    localImage: '/assets/n626.avif',
+    id: '02'
+  },
+  {
+    title: 'bon bon',
+    repo: 'https://github.com/20essentials/project-000-633',
+    localImage: '/assets/n633.avif',
+    id: '03'
+  },
+  {
+    title: 'Crystal',
+    repo: 'https://github.com/20essentials/project-000-639',
+    localImage: '/assets/n639.avif',
+    id: '04'
+  },
+  {
+    title: 'Like me',
+    repo: 'https://github.com/20essentials/project-000-645',
+    localImage: '/assets/n645.avif',
+    id: '05'
+  },
+  {
+    title: 'Window Licker',
+    repo: 'https://github.com/20essentials/project-000-606',
+    localImage: '/assets/n606.avif',
+    id: '06'
+  },
+  {
+    title: 'BabyBlue',
+    repo: 'https://github.com/20essentials/project-000-613',
+    localImage: '/assets/n613.avif',
+    id: '07'
+  },
+  {
+    title: 'sky',
+    repo: 'https://github.com/20essentials/project-000-653',
+    localImage: '/assets/n653.avif',
+    id: '08'
+  },
+  {
+    title: 'SweetHeart',
+    repo: 'https://github.com/20essentials/project-000-659',
+    localImage: '/assets/n659.avif',
+    id: '09'
+  },
+  {
+    title: 'Tired',
+    repo: 'https://github.com/20essentials/project-000-668',
+    localImage: '/assets/n668.avif',
+    id: '10'
+  },
+  {
+    title: 'Loader',
+    repo: 'https://github.com/20essentials/project-000-678',
+    localImage: '/assets/n678.avif',
+    id: '11'
+  },
+  {
+    title: 'Loading',
+    repo: 'https://github.com/20essentials/project-000-692',
+    localImage: '/assets/n692.avif',
+    id: '12'
+  },
+  {
+    title: 'Ying yang',
+    repo: 'https://github.com/20essentials/project-000-700',
+    localImage: '/assets/n700.avif',
+    id: '13'
+  },
+  {
+    title: 'Button Lem',
+    repo: 'https://github.com/20essentials/project-000-708',
+    localImage: '/assets/n708.avif',
+    id: '14'
+  },
+  {
+    title: 'Text Gradient',
+    repo: 'https://github.com/20essentials/project-000-714',
+    localImage: '/assets/n714.avif',
+    id: '15'
+  },
+  {
+    title: 'Background Stronger',
+    repo: 'https://github.com/20essentials/project-000-719',
+    localImage: '/assets/n719.avif',
+    id: '16'
+  },
+  {
+    title: 'Vop',
+    repo: 'https://github.com/20essentials/project-000-725',
+    localImage: '/assets/n725.avif',
+    id: '17'
+  },
+  {
+    title: 'Sprite Animation',
+    repo: 'https://github.com/20essentials/project-000-732',
+    localImage: '/assets/n732.avif',
+    id: '18'
+  },
+  {
+    title: 'Skynet',
+    repo: 'https://github.com/20essentials/project-000-738',
+    localImage: '/assets/n738.avif',
+    id: '19'
+  },
+  {
+    title: 'Blandor',
+    repo: 'https://github.com/20essentials/project-000-749',
+    localImage: '/assets/n749.avif',
+    id: '20'
+  }
+];
+---
+
+<section class='wrapper'>
+  <div class='cont--carousel'>
+    <div class='carousel'>
+      {
+        arrayCards.map(({ id, localImage, repo, title }) => (
+          <div class='carousel-item' data-anchor={repo}>
+            <div class='carousel-box'>
+              <div class='title'>{title}</div>
+              <div class='num'>{id}</div>
+              <img src={baseUrl(localImage)} />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('click', e => {
+    const target = e.target as HTMLElement;
+    if (target.matches('.carousel-item, .carousel-item *')) {
+      const carouselItem = target.closest('.carousel-item') as HTMLElement;
+      const anchor = carouselItem.dataset.anchor;
+      window.open(anchor, '_blank');
+    }
+  });
+
+  /*--------------------
+Vars
+--------------------*/
+  let progress = 50;
+  let startX = 0;
+  let active = 0;
+  let isDown = false;
+
+  /*--------------------
+Constants
+--------------------*/
+  const speedWheel = 0.03;
+  const speedDrag = -0.1;
+
+  /*--------------------
+Get Z
+--------------------*/
+  const getZindex = (array: Element[], index: number): number[] =>
+    array.map((_, i) =>
+      index === i ? array.length : array.length - Math.abs(index - i)
+    );
+
+  /*--------------------
+Items
+--------------------*/
+  const $items: NodeListOf<HTMLElement> =
+    document.querySelectorAll('.carousel-item');
+
+  if ($items.length === 0) {
+    throw new Error('No carousel items found!');
+  }
+
+  const displayItems = (
+    item: HTMLElement,
+    index: number,
+    activeIndex: number
+  ) => {
+    const zIndex = getZindex(Array.from($items), activeIndex)[index];
+    item.style.setProperty('--zIndex', zIndex.toString());
+    item.style.setProperty(
+      '--active',
+      ((index - activeIndex) / $items.length).toString()
+    );
+  };
+
+  /*--------------------
+Animate
+--------------------*/
+  const animate = () => {
+    progress = Math.max(0, Math.min(progress, 100));
+    active = Math.floor((progress / 100) * ($items.length - 1));
+    $items.forEach((item, index) => displayItems(item, index, active));
+  };
+  animate();
+
+  /*--------------------
+Click on Items
+--------------------*/
+  $items.forEach((item, i) => {
+    item.addEventListener('click', () => {
+      progress = (i / $items.length) * 100 + 10;
+      animate();
+    });
+  });
+
+  /*--------------------
+Handlers
+--------------------*/
+  const handleWheel = (e: WheelEvent) => {
+    const wheelProgress = e.deltaY * speedWheel;
+    progress = progress + wheelProgress;
+    animate();
+  };
+
+  const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDown) return;
+    const x =
+      'clientX' in e
+        ? e.clientX
+        : e.touches && e.touches[0]?.clientX
+          ? e.touches[0].clientX
+          : 0;
+    const mouseProgress = (x - startX) * speedDrag;
+    progress = progress + mouseProgress;
+    startX = x;
+    animate();
+  };
+
+  const handleMouseDown = (e: MouseEvent | TouchEvent) => {
+    isDown = true;
+    startX =
+      'clientX' in e
+        ? e.clientX
+        : e.touches && e.touches[0]?.clientX
+          ? e.touches[0].clientX
+          : 0;
+  };
+
+  const handleMouseUp = () => {
+    isDown = false;
+  };
+
+  /*--------------------
+Listeners
+--------------------*/
+  document.addEventListener('wheel', handleWheel);
+  document.addEventListener('mousedown', handleMouseDown);
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+  document.addEventListener('touchstart', handleMouseDown);
+  document.addEventListener('touchmove', handleMouseMove);
+  document.addEventListener('touchend', handleMouseUp);
+
+  /*--------------------
+Optional: Generate 20 items dynamically
+--------------------*/
+  const carouselContainer = document.querySelector<HTMLElement>(
+    '.carousel-container'
+  );
+  if (carouselContainer && $items.length < 20) {
+    const missing = 20 - $items.length;
+    for (let i = 0; i < missing; i++) {
+      const item = document.createElement('div');
+      item.className = 'carousel-item';
+      carouselContainer.appendChild(item);
+    }
+  }
+</script>
+
+<style>
+  .wrapper {
+    position: relative;
+    height: 100vh;
+    overflow: visible;
+
+    .cont--carousel {
+      position: relative;
+    }
+  }
+
+  .carousel {
+    position: relative;
+    z-index: 1;
+    height: 90vh;
+    inset: 0;
+    overflow: visible;
+  }
+
+  .carousel-item {
+    --items: 10;
+    --width: clamp(9.77vmax, 30vw, 19.53vmax);
+    --height: clamp(13.02vmax, 40vw, 26.04vmax);
+    --x: calc(var(--active) * 1800%);
+    --y: calc(var(--active) * 10%);
+    --rot: calc(var(--active) * 120deg);
+    --opacity: calc(var(--zIndex) / var(--items) * 3 - 2);
+    overflow: hidden;
+    position: absolute;
+    z-index: var(--zIndex);
+    width: var(--width);
+    height: var(--height);
+    margin: calc(var(--height) * -0.5) 0 0 calc(var(--width) * -0.5);
+    top: 50%;
+    left: 50%;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transform-origin: 0% 100%;
+    border-radius: 0.65vmax;
+    box-shadow: 0 0.65vmax 3.26vmax 0.65vmax rgba(0, 0, 0, 0.5);
+    background: black;
+    pointer-events: all;
+    transform: translate(var(--x), var(--y)) rotate(var(--rot));
+    transition: transform 0.8s cubic-bezier(0, 0.02, 0, 1);
+  }
+
+  @media (width > 1024px) {
+    .carousel-item {
+      --y: calc(var(--active) * 200%);
+    }
+  }
+
+  .carousel-item .carousel-box {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.8s cubic-bezier(0, 0.02, 0, 1);
+    opacity: var(--opacity);
+    font-family: 'AnotherDanger', serif;
+  }
+
+  .carousel-item .carousel-box:before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0) 50%,
+      rgba(0, 0, 0, 0.5)
+    );
+  }
+
+  .carousel-item .title {
+    position: absolute;
+    z-index: 1;
+    color: #fff;
+    transition: opacity 0.8s cubic-bezier(0, 0.02, 0, 1);
+    left: 1.3vmax;
+    bottom: 1.3vmax;
+    font-size: clamp(1.3vmax, 3vw, 1.95vmax);
+    text-shadow: 0 0.26vmax 0.26vmax rgba(0, 0, 0, 0.1);
+  }
+
+  .carousel-item .num {
+    position: absolute;
+    z-index: 1;
+    color: #fff;
+    top: 0.65vmax;
+    left: 1.3vmax;
+    font-size: clamp(1.3vmax, 10vw, 5.21vmax);
+    transition: opacity 0.8s cubic-bezier(0, 0.02, 0, 1);
+  }
+
+  .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  .logo {
+    position: absolute;
+    z-index: 2;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'AnotherDanger', serif;
+    pointer-events: all;
+    color: black;
+    text-decoration: none;
+    top: 1.82vmax;
+    right: 1.82vmax;
+    width: 1.95vmax;
+    height: 1.95vmax;
+    font-size: 1.3vmax;
+    padding-bottom: 0.065vmax;
+    overflow: hidden;
+  }
+
+  .social {
+    position: absolute;
+    z-index: 10;
+    bottom: 1.3vmax;
+    right: 1.63vmax;
+    color: #fff;
+    opacity: 0.4;
+
+    a {
+      display: inline-block;
+      margin-left: 0.2vmax;
+    }
+
+    svg {
+      --fill: #fff;
+      width: 2.28vmax;
+      height: 2.28vmax;
+    }
+  }
+</style>
