@@ -288,6 +288,10 @@ Optional: Generate 20 items dynamically
     height: 100vh;
     overflow: visible;
 
+    @media (width <= 1111px) and (orientation: portrait) {
+      overflow: hidden;
+    }
+
     .cont--carousel {
       position: relative;
     }
